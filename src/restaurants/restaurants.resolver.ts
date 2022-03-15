@@ -1,5 +1,6 @@
 import { Args, Mutation, Query, Resolver } from '@nestjs/graphql';
 import { CreateRestaurantDto } from './dtos/create-restaurant.dto';
+import { UpdateRestaurantDto } from './dtos/update-restaurant.dto';
 import { Restaurant } from './entities/restaurant.entity';
 import { RestaurantService } from './restaurants.service';
 
@@ -23,5 +24,10 @@ export class RestaurantsResolver {
       console.log(e);
       return false;
     }
+  }
+
+  @Mutation((returns) => Boolean)
+  updateRestaurant(@Args('input') input: UpdateRestaurantDto): boolean {
+    return true;
   }
 }
