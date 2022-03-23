@@ -16,7 +16,9 @@ export class MailService {
     form.append('from', `Excited User <mailgun@${this.options.domain}>`);
     form.append('to', 'askar200018@mail.ru');
     form.append('subject', subject);
-    form.append('text', content);
+    form.append('template', 'verify-email');
+    form.append('v:username', 'Askar');
+    form.append('v:code', 'falsdjfs');
 
     const response = await got(
       `https://api.mailgun.net/v3/${this.options.domain}/messages`,
@@ -30,5 +32,7 @@ export class MailService {
         body: form,
       },
     );
+
+    console.log(response.body);
   }
 }
