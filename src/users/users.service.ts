@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { JwtService } from 'src/jwt/jwt.service';
-import { MailService } from 'src/mail/ mail.service';
+import { MailService } from 'src/mail/mail.service';
 import { User } from './entities/user.entity';
 import {
   CreateAccountInput,
@@ -116,6 +116,7 @@ export class UsersService {
       if (verification) {
         verification.user.verified = true;
         await this.users.save(verification.user);
+        await this.verifications.delete(verification.id);
         return { ok: true };
       }
       return { ok: false, error: 'Verification not found' };
