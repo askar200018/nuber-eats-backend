@@ -16,7 +16,7 @@ export class MailService {
   ) {
     const form = new FormData();
     form.append('from', `Excited User <mailgun@${this.options.domain}>`);
-    form.append('to', 'askar200018@mail.ru');
+    form.append('to', 'imangali950@gmail.com');
     form.append('subject', subject);
     form.append('template', template);
     mailVars.forEach((mVar) => form.append(`v:${mVar.key}`, mVar.value));
@@ -34,7 +34,7 @@ export class MailService {
           body: form,
         },
       );
-      console.log(response);
+      console.log(response.body);
     } catch (error) {
       console.log(error);
     }
