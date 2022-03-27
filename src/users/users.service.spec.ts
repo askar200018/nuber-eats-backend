@@ -139,7 +139,7 @@ describe('UsersService', () => {
       expect(result).toEqual({ ok: false, error: 'User not found' });
     });
 
-    it('should faisl if password is wrong', async () => {
+    it('should fail if password is wrong', async () => {
       const mockedUser = {
         checkPassword: jest.fn(() => Promise.resolve(false)),
       };
@@ -259,5 +259,43 @@ describe('UsersService', () => {
       expect(result).toEqual({ ok: false, error: 'Could not update profile' });
     });
   });
-  it.todo('verifyEmail');
+  describe('verifyEmail', () => {
+    it('should verify email', async () => {
+      const mockedVerification = {
+        id: 1,
+        user: { verified: false },
+      };
+
+      verificationRepository.findOne.mockResolvedValue(mockedVerification);
+
+      const result = await service.verifyEmail('');
+
+      expect(verificationRepository.findOne).toHaveBeenCalledTimes(1);
+      expect(verificationRepository.findOne).toHaveBeenCalledWith(
+        expect.any(Object),
+        expect.any(Object),
+      );
+
+      expect(usersRepository.save).toHaveBeenCalledTimes(1);
+      expect(usersRepository.save).toHaveBeenCalledWith({ verified: true });
+
+      expect(verificationRepository.delete).toHaveBeenCalledTimes(1);
+      expect(verificationRepository.delete).toHaveBeenCalledWith(
+        mockedVerification.id,
+      );
+
+      expect(result).toEqual({ ok: true });
+    });
+    it('should fail if verification does not exist', async () => {
+      verificationRepository.findOne.mockResolvedValue(null);
+      const result = await service.verifyEmail('code');
+      expect(result).toEqual({ ok: false, error: 'Verification not found' });
+    });
+
+    it('should fail on exception', async () => {
+      verificationRepository.findOne.mockRejectedValue(new Error());
+      const result = await service.verifyEmail('code');
+      expect(result).toEqual({ ok: false, error: 'Could not verify email' });
+    });
+  });
 });
