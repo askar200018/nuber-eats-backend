@@ -15,14 +15,14 @@ const mockRepository = () => ({
   delete: jest.fn(),
 });
 
-const mockJwtService = {
+const mockJwtService = () => ({
   sign: jest.fn(() => 'signed-token-baby'),
   verify: jest.fn(),
-};
+});
 
-const mockMailService = {
+const mockMailService = () => ({
   sendVerificationEmail: jest.fn(),
-};
+});
 
 type MockRepository<T> = Partial<Record<keyof Repository<T>, jest.Mock>>;
 
@@ -42,8 +42,8 @@ describe('UsersService', () => {
           provide: getRepositoryToken(Verification),
           useValue: mockRepository(),
         },
-        { provide: JwtService, useValue: mockJwtService },
-        { provide: MailService, useValue: mockMailService },
+        { provide: JwtService, useValue: mockJwtService() },
+        { provide: MailService, useValue: mockMailService() },
       ],
     }).compile();
     service = module.get<UsersService>(UsersService);
@@ -231,10 +231,32 @@ describe('UsersService', () => {
       });
       expect(verificationRepository.save).toHaveBeenCalledWith(newVerification);
 
+      expect(mailService.sendVerificationEmail).toHaveBeenCalledTimes(1);
       expect(mailService.sendVerificationEmail).toHaveBeenCalledWith(
         newUser.email,
         newVerification.code,
       );
+    });
+
+    it('should change password', async () => {
+      const editProfileArgs = {
+        userId: 1,
+        input: { password: 'new.password' },
+      };
+      usersRepository.findOne.mockResolvedValue({ password: 'old' });
+      const result = await service.editProfile(
+        editProfileArgs.userId,
+        editProfileArgs.input,
+      );
+
+      expect(usersRepository.save).toHaveBeenCalledWith(editProfileArgs.input);
+      expect(result).toEqual({ ok: true });
+    });
+
+    it('should fail on exception', async () => {
+      usersRepository.save.mockRejectedValue(new Error());
+      const result = await service.editProfile(1, { email: 'foo@bar.com' });
+      expect(result).toEqual({ ok: false, error: 'Could not update profile' });
     });
   });
   it.todo('verifyEmail');
