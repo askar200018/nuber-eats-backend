@@ -171,7 +171,6 @@ describe('UsersService', () => {
       usersRepository.findOne.mockRejectedValue(new Error(''));
 
       const result = await service.login(loginArgs);
-      console.log(result);
 
       expect(result).toEqual({ ok: false, error: "Can't log user in" });
     });
