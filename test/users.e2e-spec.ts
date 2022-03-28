@@ -2,8 +2,9 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { INestApplication } from '@nestjs/common';
 import * as request from 'supertest';
 import { AppModule } from '../src/app.module';
+import { getConnection } from 'typeorm';
 
-describe('Users (e2e)', () => {
+describe('UserModule (e2e)', () => {
   let app: INestApplication;
 
   beforeAll(async () => {
@@ -15,10 +16,15 @@ describe('Users (e2e)', () => {
     await app.init();
   });
 
-  it.todo('me');
-  it.todo('userProfile');
+  afterAll(async () => {
+    await getConnection().dropDatabase();
+    app.close();
+  });
+
   it.todo('createAccount');
+  it.todo('userProfile');
   it.todo('login');
-  it.todo('editProfile');
+  it.todo('me');
   it.todo('verifyEmail');
+  it.todo('editProfile');
 });
