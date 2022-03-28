@@ -9,11 +9,7 @@ import { MailModuleOptions, MailVar } from './mail.interfaces';
 export class MailService {
   constructor(@Inject(CONFIG_OPTIONS) private options: MailModuleOptions) {}
 
-  private async _sendEmail(
-    subject: string,
-    template: string,
-    mailVars: MailVar[],
-  ) {
+  async sendEmail(subject: string, template: string, mailVars: MailVar[]) {
     const form = new FormData();
     form.append('from', `Excited User <mailgun@${this.options.domain}>`);
     form.append('to', 'imangali950@gmail.com');
@@ -41,7 +37,7 @@ export class MailService {
   }
 
   sendVerificationEmail(email: string, code: string) {
-    this._sendEmail('Verify Your Email', 'verify-email', [
+    this.sendEmail('Verify Your Email', 'verify-email', [
       { key: 'code', value: code },
       { key: 'username', value: email },
     ]);
