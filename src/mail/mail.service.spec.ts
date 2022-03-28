@@ -1,14 +1,13 @@
 import { Test } from '@nestjs/testing';
+import got from 'got';
+import * as FormData from 'form-data';
 import { CONFIG_OPTIONS } from 'src/common/common.constants';
 import { MailService } from 'src/mail/mail.service';
 
-jest.mock('got', () => {});
+jest.mock('got');
+jest.mock('form-data');
 
-jest.mock('form-data', () => {
-  return {
-    append: jest.fn(),
-  };
-});
+const TEST_DOMAIN = 'test-domain';
 
 describe('MailService', () => {
   let service: MailService;
@@ -21,7 +20,7 @@ describe('MailService', () => {
           provide: CONFIG_OPTIONS,
           useValue: {
             apiKey: 'test-apiKey',
-            domain: 'test-domain',
+            domain: TEST_DOMAIN,
             fromEmail: 'test-fromEmail',
           },
         },
@@ -34,13 +33,41 @@ describe('MailService', () => {
     expect(service).toBeDefined();
   });
 
-  it.todo('sendEmail');
+  describe('sendEmail', () => {
+    it('should send email', async () => {
+      const formSpy = jest.spyOn(FormData.prototype, 'append');
+
+      const ok = await service.sendEmail('', '', []);
+
+      expect(formSpy).toHaveBeenCalled();
+      expect(formSpy).toHaveBeenCalledWith(
+        expect.any(String),
+        expect.any(String),
+      );
+
+      expect(got.post).toHaveBeenCalledTimes(1);
+      expect(got.post).toHaveBeenCalledWith(
+        `https://api.mailgun.net/v3/${TEST_DOMAIN}/messages`,
+        expect.any(Object),
+      );
+
+      expect(ok).toEqual(true);
+    });
+
+    it('should fail on exceptions', async () => {
+      jest.spyOn(got, 'post').mockImplementation(() => {
+        throw new Error();
+      });
+      const ok = await service.sendEmail('', '', []);
+      expect(ok).toEqual(false);
+    });
+  });
 
   describe('sendVerificationEmail', () => {
     it('should call sendEmail', () => {
       const sendVerificationEmailArgs = { email: 'email', code: 'code' };
 
-      jest.spyOn(service, 'sendEmail').mockImplementation(async () => {});
+      jest.spyOn(service, 'sendEmail').mockImplementation(async () => true);
       service.sendVerificationEmail(
         sendVerificationEmailArgs.email,
         sendVerificationEmailArgs.code,

@@ -9,7 +9,11 @@ import { MailModuleOptions, MailVar } from './mail.interfaces';
 export class MailService {
   constructor(@Inject(CONFIG_OPTIONS) private options: MailModuleOptions) {}
 
-  async sendEmail(subject: string, template: string, mailVars: MailVar[]) {
+  async sendEmail(
+    subject: string,
+    template: string,
+    mailVars: MailVar[],
+  ): Promise<boolean> {
     const form = new FormData();
     form.append('from', `Excited User <mailgun@${this.options.domain}>`);
     form.append('to', 'imangali950@gmail.com');
@@ -18,10 +22,9 @@ export class MailService {
     mailVars.forEach((mVar) => form.append(`v:${mVar.key}`, mVar.value));
 
     try {
-      const response = await got(
+      await got.post(
         `https://api.mailgun.net/v3/${this.options.domain}/messages`,
         {
-          method: 'POST',
           headers: {
             Authorization: `Basic ${Buffer.from(
               `api:${this.options.apiKey}`,
@@ -30,9 +33,9 @@ export class MailService {
           body: form,
         },
       );
-      console.log(response.body);
+      return true;
     } catch (error) {
-      console.log(error);
+      return false;
     }
   }
 
