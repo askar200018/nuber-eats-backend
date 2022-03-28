@@ -37,7 +37,9 @@ describe('MailService', () => {
     it('should send email', async () => {
       const formSpy = jest.spyOn(FormData.prototype, 'append');
 
-      const ok = await service.sendEmail('', '', []);
+      const ok = await service.sendEmail('', '', [
+        { key: 'foo', value: 'bar' },
+      ]);
 
       expect(formSpy).toHaveBeenCalled();
       expect(formSpy).toHaveBeenCalledWith(
