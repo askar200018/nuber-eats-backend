@@ -20,6 +20,8 @@ import { Category } from './entities/category.entiy';
 import { Restaurant } from './entities/restaurant.entity';
 import { CategoryRepository } from './repositories/category.repository';
 
+const RESULTS_IN_ONE_PAGE = 25;
+
 @Injectable()
 export class RestaurantService {
   constructor(
@@ -128,16 +130,27 @@ export class RestaurantService {
     return this.restaurants.count({ category });
   }
 
-  async getCategoryBySlug({ slug }: CategoryInput): Promise<CategoryOutput> {
+  async getCategoryBySlug({
+    slug,
+    page,
+  }: CategoryInput): Promise<CategoryOutput> {
     try {
-      const category = await this.categories.findOne(
-        { slug },
-        { relations: ['restaurants'] },
-      );
+      const category = await this.categories.findOne({ slug });
       if (!category) {
         return { ok: false, error: 'Category not found' };
       }
-      return { ok: true, category };
+      const restaurants = await this.restaurants.find({
+        where: { category },
+        take: RESULTS_IN_ONE_PAGE,
+        skip: (page - 1) * RESULTS_IN_ONE_PAGE,
+      });
+      category.restaurants = restaurants;
+      const totalResults = await this.countRestaurants(category);
+      return {
+        ok: true,
+        category,
+        totalPages: Math.ceil(totalResults / RESULTS_IN_ONE_PAGE),
+      };
     } catch {
       return { ok: false, error: 'Could not load category' };
     }
